@@ -21,14 +21,47 @@ find $data_path -type f -name "*.csv" | while IFS= read -r filepath; do
             
             for model in ${models[@]}; do
                 if ! [[ " $unreduceable_models[@] " =~ $model ]]; then
-                    python execute_training.py -i ${filepath} -e ${model} -s $seed -y ./results/$(basename "$filepath")_${model}_history_2D.csv -p ./results/metrics.csv -m ./results/$(basename "$filepath")_${model}_model_2D.keras --Dim2D --nosplitted -d $filename
+                    python scripts/execute_training.py \
+                        -i ${filepath} \
+                        -e ${model} \
+                        -s $seed \
+                        -y ./results/$(basename "$filepath")_${model}_history_2D.csv \
+                        -p ./results/metrics.csv \
+                        -m ./results/$(basename "$filepath")_${model}_model_2D.keras \
+                        --Dim2D \
+                        --nosplitted \
+                        -d $filename
                 fi
-                    python execute_training.py -i ${filepath} -e ${model}_reduced -s $seed -y ./results/$(basename "$filepath")_${model}_history_1D.csv -p ./results/metrics.csv -m ./results/$(basename "$filepath")_${model}_1D.keras --nosplitted -d $filename
+                    python scripts/execute_training.py \
+                        -i ${filepath} \
+                        -e ${model}_reduced \
+                        -s $seed \
+                        -y ./results/$(basename "$filepath")_${model}_history_1D.csv \
+                        -p ./results/metrics.csv \
+                        -m ./results/$(basename "$filepath")_${model}_1D.keras \
+                        --nosplitted \
+                        -d $filename
             done
 
             for i in $(seq 0 7); do
-                    python execute_training.py -i ${filepath} -e Group_${i} -s $seed -y ./results/$(basename "$filepath")_Group_${i}_history.csv -p ./results/metrics.csv -m ./results/$(basename "$filepath")_Group_${i}.keras --nosplitted -d $filename
-                    python execute_training.py -i ${filepath} -e Group_${i}_fft -s $seed -y ./results/$(basename "$filepath")_Group_${i}_history_fft.csv -p ./results/metrics.csv -m ./results/$(basename "$filepath")_Group_${i}_fft.keras --nosplitted -d $filename
+                    python scripts/execute_training.py \
+                        -i ${filepath} \
+                        -e Group_${i} \
+                        -s $seed \
+                        -y ./results/$(basename "$filepath")_Group_${i}_history.csv \
+                        -p ./results/metrics.csv \
+                        -m ./results/$(basename "$filepath")_Group_${i}.keras \
+                        --nosplitted \
+                        -d $filename
+                    python scripts/execute_training.py \
+                        -i ${filepath} \
+                        -e Group_${i}_fft \
+                        -s $seed \
+                        -y ./results/$(basename "$filepath")_Group_${i}_history_fft.csv \
+                        -p ./results/metrics.csv \
+                        -m ./results/$(basename "$filepath")_Group_${i}_fft.keras \
+                        --nosplitted \
+                        -d $filename
             done
         done < $seed_path
     fi

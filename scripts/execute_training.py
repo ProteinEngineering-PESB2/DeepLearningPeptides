@@ -7,7 +7,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, confusion_m
 from keras.utils import set_random_seed
 from architectures import *
 from utils import process_data, create_callbacks, plot_results
-import sys
+import sys, os
 
 def get_metrics(model, X, labels, prefix: str) -> dict:
     y_pred = model.predict(X)
@@ -46,10 +46,10 @@ def get_metrics(model, X, labels, prefix: str) -> dict:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i","--input", help="Path of the data", required=True)
-    parser.add_argument("-d","--dataset", help="Name of the dataset", required=False)
+    parser.add_argument("-i", "--input", help="Path of the data", required=True)
+    parser.add_argument("-d", "--dataset", help="Name of the dataset", required=False)
     parser.add_argument("-e", "--encoding", help="Name of the encoding", required=True)
-    parser.add_argument("-s","--seed", help ="Seed for training", required=False, default=42)
+    parser.add_argument("-s", "--seed", help ="Seed for training", required=False, default=42)
     parser.add_argument("-y", "--history_path", help="History path", required=True)
     parser.add_argument("-p", "--metrics_path", help="Metrics path", required=True)
     parser.add_argument("-m", "--model_path", help="Model path", required=True)
@@ -75,10 +75,22 @@ if __name__ == "__main__":
     else:
         # Esta seccion esta a medio hacer (pero funcionando)
         # Falta que reciba parametros como test_size, response_col, etc etc
-        df = pd.read_csv("{}/{}.csv".format(args.input, args.dataset)) 
+        df = pd.read_csv("{}/{}.csv".format(args.input, args.dataset))
+        if os.path.exists(args.metrics_path):
+            metrics = pd.read_csv(args.metrics_path)
+            dim = "2D" if args.Dim2D else "1D"
+            row_to_check = [args.input, args.dataset, args.encoding.replace("_reduced",""), dim, args.seed]
+            
+            if row_to_check in metrics[['data_path', 'filename', 'encoding', 'dimension', 'seed']].values:
+                print(f"[SCRIPT] {args.input} {args.dataset} {args.encoding} {args.seed} already trained.")
+                exit(0)
+
         labels = df["activity"]
-        data = np.load("{}/{}/{}.npy".format(args.input, args.dataset, 
-                                               args.encoding))
+        try:
+            data = np.load("{}/{}/{}.npy".format(args.input, args.dataset, args.encoding))
+        except FileNotFoundError:
+            print(f"[SCRIPT] {args.encoding} not found. Skipping..")
+            exit(1)
         X_train, X_val, y_train, y_val = train_test_split(data, labels, 
                                                           test_size=0.2, random_state=int(args.seed))
 
