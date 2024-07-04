@@ -57,6 +57,19 @@ if __name__ == "__main__":
     parser.add_argument("--nosplitted", help="If the data is not splitted, it splitts by the given seed", action="store_true")
     args = parser.parse_args()
 
+    input_columns = ["data_path", "filename", "encoding", "dimension", "seed"]
+
+    if os.path.exists(args.metrics_path):
+        metrics = pd.read_csv(args.metrics_path)
+        dim = "2D" if args.Dim2D else "1D"
+        row_to_check = pd.Series([args.input, args.dataset, args.encoding.replace("_reduced",""), dim, int(args.seed)], index=input_columns)
+        row_exists = metrics[input_columns].apply(lambda row: row.equals(row_to_check), axis=1).any()
+
+        if row_exists:
+            print(f"[SCRIPT] {args.input} {args.dataset} {args.encoding} {args.seed} already trained.")
+            exit(0)    
+        
+
     callbacks_list = create_callbacks(history_path=args.history_path, model_path=args.model_path)
 
     if not args.nosplitted:
@@ -76,14 +89,6 @@ if __name__ == "__main__":
         # Esta seccion esta a medio hacer (pero funcionando)
         # Falta que reciba parametros como test_size, response_col, etc etc
         df = pd.read_csv("{}/{}.csv".format(args.input, args.dataset))
-        if os.path.exists(args.metrics_path):
-            metrics = pd.read_csv(args.metrics_path)
-            dim = "2D" if args.Dim2D else "1D"
-            row_to_check = [args.input, args.dataset, args.encoding.replace("_reduced",""), dim, args.seed]
-            
-            if row_to_check in metrics[['data_path', 'filename', 'encoding', 'dimension', 'seed']].values:
-                print(f"[SCRIPT] {args.input} {args.dataset} {args.encoding} {args.seed} already trained.")
-                exit(0)
 
         labels = df["activity"]
         try:
