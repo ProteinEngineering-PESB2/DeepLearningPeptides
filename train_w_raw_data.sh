@@ -15,7 +15,7 @@ find $data_path -type f -name "*.csv" | while IFS= read -r filepath; do
     filename=$(basename "$filepath" .csv)
     filepath="${filepath%/*}"
     # This is a patch, remove
-    if [[ $filename == *train_dataset ]]; then
+    #if [[ $filename == *train_dataset ]]; then
         while IFS="" read -r seed || [ -n "$seed" ]; do 
             echo "Using $filepath and $filename with seed $seed"
             
@@ -63,7 +63,16 @@ find $data_path -type f -name "*.csv" | while IFS= read -r filepath; do
                         --nosplitted \
                         -d $filename
             done
+            python scripts/execute_training.py \
+                -i ${filepath} \
+                -e david_one_hot \
+                -s $seed \
+                -y ./results/$(basename "$filepath")_david_one_hot_history.csv \
+                -p ./results/metrics.csv \
+                -m ./results/$(basename "$filepath")_david_one_hot.keras \
+                --nosplitted \
+                -d $filename
         done < $seed_path
-    fi
+    #fi
     
 done
